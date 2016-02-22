@@ -26,8 +26,6 @@ cat("Programado por Ricardo Faria \n
 
 t <- Sys.time()
 
-source("stations_coords_input.R")
-
 #create folders
 #system("mkdir kmz Images GIFs graphs GoogleMaps")
 
@@ -38,11 +36,11 @@ rgb.palette.rad <- colorRampPalette(c("lightcyan", "yellow2", "orange", "tomato1
 fileNames <- Sys.glob("results/wrfout_LR*")
 nc <- nc_open(fileNames)
 names(nc$var)           #variav names vamos usar: 
-                        #Liquid soil moisture: "SH2O" [mm^3/mm^3] ou [%]
-                        #Surface runoff: "SFROFF" [mm] ou [kg m^-2 s^-1]
-                        #Subsurface runoff: "UDROFF" [mm] ou [kg m^-2 s^-1]
-                        #Max hourly precipitation rate: "RAINNC" [kg m^-2 s^-1]
-                        #Clouds: "CLDFRA" [%]
+#Liquid soil moisture: "SH2O" [mm^3/mm^3] ou [%]
+#Surface runoff: "SFROFF" [mm] ou [kg m^-2 s^-1]
+#Subsurface runoff: "UDROFF" [mm] ou [kg m^-2 s^-1]
+#Max hourly precipitation rate: "RAINNC" [kg m^-2 s^-1]
+#Clouds: "CLDFRA" [%]
 var_names <- c("SH2O",
                "SFROFF",
                "UDROFF",
@@ -56,17 +54,40 @@ land <- readShapeSpatial("map/PRT_adm3.shp", proj4string = proj)
 lat_min <- min(ncvar_get(nc, "XLAT")) 
 lat_max <- max(ncvar_get(nc, names(nc$var)[2]))
 lat <- unique(as.vector(ncvar_get(nc, "XLAT")))
-lat <- as.vector(lat)
-lat_index <- which.max(lat[lat<=32.6])
 
 long_min <- min(ncvar_get(nc, "XLONG"))
 long_max <- max(ncvar_get(nc, names(nc$var)[3]))
 long <- unique(as.vector(ncvar_get(nc, "XLONG")))
-long <- as.vector(long)
-long_index <- which.max(long[long<=-17.1])
 
+#coords transformation
+#source("stations_coords_input.R")
+est_vec <- c(-16.917, 32.671, -17.027, 32.7266)
+names(est_vec) <- c("FNCH_long", "FNCH_lat", "SEAG_long", "SEAG_lat")
+est_names_list <- c("FNCH", "SEAG")
+
+n_l <- 0
+lat_index <- c()
+long_index <- c()
+for (l in 1:length(est_ex)/2) {  #est_ex[l+n_l],est_ex[l+n_l+1]
+      
+      lat_index_temp <- 0
+      lat <- as.vector(lat)
+      lat_index_temp <- which.max(lat[lat <= est_ex[l+n_l+1]])
+      lat_index <- append(lat_index, lat_index_temp)
+      
+      long_index_temp <- 0
+      long <- as.vector(long)
+      long_index_temp <- which.max(long[long <= est_ex[l+n_l]])
+      long_index <- c(long_index, long_index_temp)
+      
+      n_l <- n_l + 1
+      
+}
+
+#topography from ncfile
 hgt <- ncvar_get(nc, "HGT")[,,1]
 
+#time 144 spacements
 hour_list <- c(seq(from = 1, to = 145, by = 6))
 times <- c()
 
@@ -114,23 +135,23 @@ for (i in 1:length(fileNames)){
             variav_udroff <- variav_udroff_nc[,,j]
             variav_rainnc <- variav_rainnc_nc[,,j]
             variav_cldfra <- variav_cldfra_nc[,,,j]   #24/144*60 = 10mnts
-
+            
             count <- count + 1
             
             print(paste(count, "* 10 minutos = [", count, "in 144]"))                  
-
+            
             #extrair dados das coorddenadas
             n_l <- 0
-            for (l in 1:length(est_ex)/2) {
+            for (l in 1:length(long_index)) {
                   
-                  coor_sh2o_appended <- append(coor_sh2o_appended, variav_sh2o_nc[est_ex[l+n_l],est_ex[l+n_l+1],j])
-                  assign(paste("coor_sh2o", names(est_ex)[l+n_l], sep = ""), coor_sh2o_appended)
-                  coor_sfroff_appended <- append(coor_sfroff_appended, variav_sfroff_nc[est_ex[l+n_l],est_ex[l+n_l+1],j])
-                  assign(paste("coor_sfroff", sep = ""), coor_sfroff_appended)
-                  coor_udroff_appended <- append(coor_udroff_appended, variav_udroff_nc[est_ex[l+n_l],est_ex[l+n_l+1],j])
-                  assign(paste("coor_udroff", sep = ""), coor_udroff_appended)
-                  coor_rainnc_appended <- append(coor_rainnc_appended, variav_rainnc_nc[est_ex[l+n_l],est_ex[l+n_l+1],j])
-                  assign(paste("coor_rainnc", sep = ""), coor_rainnc_appended)
+                  coor_sh2o_appended <- append(coor_sh2o_appended, variav_sh2o_nc[long_index[i],lat_index[i],j])
+                  assign(paste("coor_sh2o_", est_names_list[l], sep = ""), coor_sh2o_appended)
+                  coor_sfroff_appended <- append(coor_sfroff_appended, variav_sfroff_nc[long_index[i],lat_index[i],j])
+                  assign(paste("coor_sfroff_", est_names_list[l], sep = ""), coor_sfroff_appended)
+                  coor_udroff_appended <- append(coor_udroff_appended, variav_udroff_nc[long_index[i],lat_index[i],j])
+                  assign(paste("coor_udroff_", est_names_list[l], sep = ""), coor_udroff_appended)
+                  coor_rainnc_appended <- append(coor_rainnc_appended, variav_rainnc_nc[long_index[i],lat_index[i],j])
+                  assign(paste("coor_rainnc_", est_names_list[l], sep = ""), coor_rainnc_appended)
                   n_l <- n_l + 1
                   
             }
@@ -157,7 +178,7 @@ for (i in 1:length(fileNames)){
       coor_sfroff <- c(coor_sfroff, coor_sfroff_appended)
       coor_udroff <- c(coor_udroff, coor_udroff_appended)
       coor_rainnc <- c(coor_rainnc, coor_rainnc_appended)
-
+      
       nc_close(temp_nc)
       
 }
