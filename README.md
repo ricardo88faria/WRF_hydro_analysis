@@ -17,7 +17,7 @@ Work in progress!!!
 ![alt text](obs/variav_rainnc_2010-02-18.png)
 ![alt text](obs/variav_rainnc_2010-02-19.png)
 ![alt text](obs/variav_rainnc_2010-02-20.png)
-![alt text](obs/coor_rain_2010-02-18.png)
+![alt text](obs/coor_rainnc_2010-02-18.png)
 
 * Liquid soil moisture "SH2O"
 ![alt text](obs/variav_sh2o_2010-02-20.png)
