@@ -8,12 +8,18 @@ library(reshape2)
 library(raster)
 library(ncdf4)
 #library(RNetCDF)
+#require("rgdal")
 #library(rworldmap)
 #library(rworldxtra)
 library(maptools)
-library(ggplot2)
 library(plotKML)
 library(plotGoogleMaps)
+library(leaflet)
+library(ggplot2)
+library(plotly)
+library(htmlwidgets)
+library(devtools)
+
 
 
 #limpeza ambiente e objetos:
@@ -28,7 +34,7 @@ cat("Programado por Ricardo Faria \n
 t <- Sys.time()
 
 #create folders
-#system("mkdir kmz Images GIFs graphs GoogleMaps")
+system("mkdir kmz Images widgets graphs")
 
 #cores dos graficos
 rgb.palette.rad <- colorRampPalette(c("lightcyan", "yellow2", "orange", "tomato1", "violetred4", "violetred", "purple"), space = "rgb")
@@ -59,6 +65,8 @@ var_names <- c("sh2o",
 #sist. de coordenadas, projecao e coordenadas (N-S, E-O)
 proj <- CRS('+proj=longlat +datum=WGS84')
 land <- readShapeSpatial("map/PRT_adm3.shp", proj4string = proj)
+#land_poly <- readShapePoly("map/PRT_adm3.shp", proj4string = proj)
+#land_OGR <- readOGR("map/", "PRT_adm3")
 
 #topography from ncfile
 hgt <- ncvar_get(nc, "HGT")[,,1]
@@ -270,9 +278,10 @@ for (j in 1:length(var_names)) {
 }
 
 #gráficos
+#em funcao das variaveis
 for (i in 1:length(var_names)) {
       
-      graph_name_png <- paste("graphs/coor_", var_names[i],"_", format(as.POSIXct(strptime(times[[1]], "%Y-%m-%d_%H:%M:%S")), "%Y-%m-%d"), ".png", sep = "")
+      graph_name_png <- paste("graphs/coor_", var_names[i],"_", format(as.POSIXct(strptime(times[1], "%Y-%m-%d_%H:%M:%S")), "%Y-%m-%d"), ".png", sep = "")
       png(graph_name_png, width = 5950, height = 4500, units = "px", res = 500)
       
       graph <- ggplot(data=get(paste("coor_", "f_", var_names[i], sep = "")), aes(x=Data, y=value, colour=variable)) +
@@ -281,9 +290,15 @@ for (i in 1:length(var_names)) {
       
       dev.off()
       
+      widget <- ggplotly(graph)
+      
+      setwd("widgets")
+      htmlwidgets::saveWidget(as.widget(widget), paste(var_names[i], "_", format(as.POSIXct(strptime(times[1], "%Y-%m-%d_%H:%M:%S")), "%Y-%m-%d"),".html", sep = ""))
+      setwd("../")
+      
 }
 
-
+#em funcao das variaveis e estacoes
 for (i in 1:length(est_names_list)) {
       
       for (j in 1:length(var_names)) {
@@ -313,7 +328,7 @@ matrix_rotate <- function(x)
 
 #source("map_shape_plot.R")
 
-max_axis <- max(unlist(max_graph)) + 50
+#max_axis <- max(unlist(max_graph)) + 50
 
 #ciclo gerar mapas e kmz
 for (i in 1:length(times)) {
@@ -328,7 +343,7 @@ for (i in 1:length(times)) {
             name_png = paste("Images/", variav_name, ".png", sep = "")
             png(name_png, width = 5950, height = 4500, units = "px", res = 500)  #width = 7000 (width = 14000, height = 9000, units = "px", res = 1000)
             
-            filled.contour(long, lat, get(variav_name), asp = 1, color = rgb.palette.rain, levels = seq(0, max_axis, levl), # nlevels = 400, #axes = F #(12), nlev=13,
+            contour <- filled.contour(long, lat, get(variav_name), asp = 1, color = rgb.palette.rain, levels = seq(0, max_axis, levl), # nlevels = 400, #axes = F #(12), nlev=13,
                            plot.title = title(main = as.expression(paste("Média diária da variável", var_names[j], as.Date(times[i]))), xlab = 'Longitude [°]', ylab = 'Latitude [°]'),
                            plot.axes = {axis(1); axis(2); plot(land, bg = "transparent", border="grey30", lwd=0.5, add = T); grid()},
                            key.title = title(main =  as.expression(paste(units_name[j]))))
@@ -338,26 +353,46 @@ for (i in 1:length(times)) {
             
             dev.off()
             
-            ##kmz
-            test <-  raster(matrix_rotate(matrix_rotate(matrix_rotate(get(variav_name)))), 
-                            xmn = long_min, xmx = long_max, ymn = lat_min, ymx = lat_max, CRS("+proj=longlat +datum=WGS84"))   # + plot.axes={ works??????
+            #raster
+            rast <- raster(matrix_rotate(matrix_rotate(matrix_rotate(get(variav_name)))), 
+                            xmn = long_min, xmx = long_max, ymn = lat_min, ymx = lat_max, CRS("+proj=longlat +datum=WGS84"))
             #proj4string(test) <- CRS("+proj=longlat +datum=WGS84") #proj
             
+            #plot_ly(z = t(get(variav_name)), lon = long, lat = lat, type = "contour")
+            
+            #ggplot
+            #rast <- rasterToPoints(rast)
+            #rast <- data.frame(rast)
+            #colnames(rast) <- c("lon","lat","valor")
+            
+            #hgt_df <- melt((matrix_rotate(t(hgt))))
+            #hgt_df$Var1 <- rast$lon
+            #hgt_df$Var2 <- rast$lat
+            #colnames(hgt_df) <- c("lon","lat","hgt")
+            #rev(hgt_df$hgt)
+            
+            #ggplot() +
+            #      geom_raster(data = rast, aes(lon , lat, fill = valor)) + 
+            #      stat_contour(data = hgt_df, aes(lon, lat, z = hgt))
+
+            ##kmz
             setwd("kmz")
-            system(paste("mkdir", paste("Rad_", as.Date(times[[i]]), sep = "")))
-            setwd(paste("Rad_", as.Date(times[[i]]), sep = ""))
+            system(paste("mkdir", paste(as.Date(times[i]), sep = "")))
+            setwd(paste(as.Date(times[i]), sep = ""))
+            system(paste("mkdir", paste(var_names[j], sep = "")))
+            setwd(paste(paste(var_names[j], sep = "")))
             
-            #KML(test, file = paste("Rad_", as.Date(times[[i]]), ".kmz", sep = ""), colour = rgb.palette.rad)
-            plotKML(obj=test, folder.name="RAD", file.name=paste("Rad_", as.Date(times[[i]]), ".kmz", sep = ""), colour_scale = rgb.palette.rad(400), open.kml = FALSE)
+            #KML(rast, file = paste("Rad_", as.Date(times[[i]]), ".kmz", sep = ""), colour = rgb.palette.rad)
+            plotKML(obj=rast, folder.name=paste(var_names[j]), file.name=paste(var_names[j], as.Date(times[[i]]), ".kmz", sep = ""), colour_scale = rgb.palette.rad(400), open.kml = FALSE)
             
-            setwd("../../")
+            setwd("../../../")
       } 
 }
 
 #GIFs
-gif_name <- paste("GIFs/", "Rad_", as.Date(times[[i]]), ".gif", sep="")
+#gif_name <- paste("GIFs/", "Rad_", as.Date(times[[i]]), ".gif", sep="")
 
-system(paste("convert -verbose -resize 30% -delay 80 -loop 0", paste("Images/", "*", sep=""), gif_name))
+#system(paste("convert -verbose -resize 30% -delay 80 -loop 0", paste("Images/", "*", sep=""), gif_name))
 
 
 t <- (Sys.time() - t)
