@@ -19,15 +19,15 @@ Work in progress!!!
 ![alt text](github/variav_rainnc_2010-02-20.png)
 ![alt text](github/coor_rainnc_2010-02-01.png)
 
-* Liquid soil moisture "SH2O"
+* Acomulated Liquid soil moisture "SH2O"
 ![alt text](github/variav_sh2o_2010-02-20.png)
 ![alt text](github/coor_sh2o_2010-02-01.png)
 
-* Surface runoff "SFROFF"
+* Acomulated Surface runoff "SFROFF"
 ![alt text](github/variav_sfroff_2010-02-20.png)
 ![alt text](github/coor_sfroff_2010-02-01.png)
 
-* Subsurface runoff "UDROFF"
+* Acomulated Subsurface runoff "UDROFF"
 ![alt text](github/variav_udroff_2010-02-20.png)
 ![alt text](github/coor_udroff_2010-02-01.png)
 
