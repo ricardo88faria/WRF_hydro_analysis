@@ -10,7 +10,7 @@ Work in progress!!!
 * Compare data obtained from Stations and WRF simulation
 
 ## Results:
-**(example of 20 feb 2010 storm in Madeira modelated in WRF, images and graphs from 2 location with respective coordinates, FNCH (Funchal) & SEAG (Serra de Água))**
+**(example of 20 feb 2010 storm in Madeira modelated in WRF, images and graphs from a list of stations  with respective coordinates)**
 
 
 * Max hourly Acomulated precipitation rate "RAINNC"
