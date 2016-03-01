@@ -20,7 +20,7 @@ library(plotly)
 library(htmlwidgets)
 library(devtools)
 
-
+source(config.txt)
 
 #limpeza ambiente e objetos:
 rm(list=ls())
@@ -81,9 +81,9 @@ long <- unique(as.vector(ncvar_get(nc, "XLONG")))
 
 #coords transformation
 #source("stations_coords_input.R")
-est_vec <- c(-16.917, 32.671, -17.027, 32.7266)
-names(est_vec) <- c("FNCH_long", "FNCH_lat", "SEAG_long", "SEAG_lat")
-est_names_list <- c("FNCH", "SEAG")
+#est_vec <- c(-16.917, 32.671, -17.027, 32.7266)
+#names(est_vec) <- c("FNCH_long", "FNCH_lat", "SEAG_long", "SEAG_lat")
+#est_names_list <- c("FNCH", "SEAG")
 
 n_l <- 0
 lat_index <- c()
