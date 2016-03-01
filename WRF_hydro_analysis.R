@@ -20,7 +20,7 @@ library(plotly)
 library(htmlwidgets)
 library(devtools)
 
-source(config.txt)
+source("config.txt")
 
 #limpeza ambiente e objetos:
 rm(list=ls())

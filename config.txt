@@ -4,9 +4,26 @@
 
 #names(est_vec) = c("FNCH_long", "FNCH_lat", "SEAG_long", "SEAG_lat")
 
-est_names_list = c("FNCH",                #stations name
-                    "SEAG")
+est_names_list = c("BCAN",                #stations name
+                    "CLHT",
+                    "ENCM",
+                    "LREC",
+                    "MACH",
+                    "MONT",
+                    "PMNZ",
+                    "PRZS",
+                    "STNA",
+                    "TRPC"
+                    )
 
-est_vec = c(-16.917, 32.671,              #station latlong degree coords
-            -17.027, 32.7266
+est_vec = c(-17.054912, 32.7563152,              #station latlong degree coords
+            -17.1793604, 32.7686763,
+            -17.0187584, 32.7541037,
+            -16.9417836, 32.6517983,
+            -16.7781930, 32.7250748,
+            -16.9012000, 32.7033953,
+            -17.1854892, 32.8447803,
+            -17.200347, 32.756707,
+            -16.8977978, 32.7780258,
+            -16.947521, 32.678166
             )
