@@ -14,22 +14,22 @@ Work in progress!!!
 
 
 * Max hourly precipitation rate "RAINNC"
-![alt text](obs/variav_rainnc_2010-02-18.png)
-![alt text](obs/variav_rainnc_2010-02-19.png)
-![alt text](obs/variav_rainnc_2010-02-20.png)
-![alt text](obs/coor_rainnc_2010-02-18.png)
+![alt text](github/variav_rainnc_2010-02-18.png)
+![alt text](github/variav_rainnc_2010-02-19.png)
+![alt text](github/variav_rainnc_2010-02-20.png)
+![alt text](github/coor_rainnc_2010-02-18.png)
 
 * Liquid soil moisture "SH2O"
-![alt text](obs/variav_sh2o_2010-02-20.png)
-![alt text](obs/coor_sh2o_2010-02-18.png)
+![alt text](github/variav_sh2o_2010-02-20.png)
+![alt text](github/coor_sh2o_2010-02-18.png)
 
 * Surface runoff "SFROFF"
-![alt text](obs/variav_sfroff_2010-02-20.png)
-![alt text](obs/coor_sfroff_2010-02-18.png)
+![alt text](github/variav_sfroff_2010-02-20.png)
+![alt text](github/coor_sfroff_2010-02-18.png)
 
 * Subsurface runoff "UDROFF"
-![alt text](obs/variav_udroff_2010-02-20.png)
-![alt text](obs/coor_udroff_2010-02-18.png)
+![alt text](github/variav_udroff_2010-02-20.png)
+![alt text](github/coor_udroff_2010-02-18.png)
 
 ## Usage:
 
