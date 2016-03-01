@@ -20,7 +20,6 @@ library(plotly)
 library(htmlwidgets)
 library(devtools)
 
-source("config.txt")
 
 #limpeza ambiente e objetos:
 rm(list=ls())
@@ -30,6 +29,8 @@ cat("\014")
 cat("Programado por Ricardo Faria \n
     ")
 #####################################
+
+source("config.txt")
 
 t <- Sys.time()
 
