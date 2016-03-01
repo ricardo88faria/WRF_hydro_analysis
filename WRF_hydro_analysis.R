@@ -344,7 +344,7 @@ for (i in 1:length(times)) {
             png(name_png, width = 5950, height = 4500, units = "px", res = 500)  #width = 7000 (width = 14000, height = 9000, units = "px", res = 1000)
             
             contour <- filled.contour(long, lat, get(variav_name), asp = 1, color = rgb.palette.rain, levels = seq(0, max_axis, levl), # nlevels = 400, #axes = F #(12), nlev=13,
-                           plot.title = title(main = as.expression(paste("Média diária da variável", var_names[j], as.Date(times[i]))), xlab = 'Longitude [°]', ylab = 'Latitude [°]'),
+                           plot.title = title(main = as.expression(paste("Média diária acomulada da variável", var_names[j], as.Date(times[i]))), xlab = 'Longitude [°]', ylab = 'Latitude [°]'),
                            plot.axes = {axis(1); axis(2); plot(land, bg = "transparent", border="grey30", lwd=0.5, add = T); grid()},
                            key.title = title(main =  as.expression(paste(units_name[j]))))
             

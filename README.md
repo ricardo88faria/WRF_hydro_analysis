@@ -13,7 +13,7 @@ Work in progress!!!
 **(example of 20 feb 2010 storm in Madeira modelated in WRF, images and graphs from 2 location with respective coordinates, FNCH (Funchal) & SEAG (Serra de Água))**
 
 
-* Max hourly precipitation rate "RAINNC"
+* Max hourly Acomulated precipitation rate "RAINNC"
 ![alt text](github/variav_rainnc_2010-02-18.png)
 ![alt text](github/variav_rainnc_2010-02-19.png)
 ![alt text](github/variav_rainnc_2010-02-20.png)
