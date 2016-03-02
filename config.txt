@@ -16,7 +16,7 @@ est_names_list = c("BCAN",                #stations name
                     "TRPC"
                     )
 
-est_vec = c(-17.054912, 32.7563152,              #station latlong degree coords
+est_vec = c(-17.054912, 32.7563152,              #station lat, long degree coords
             -17.1793604, 32.7686763,
             -17.0187584, 32.7541037,
             -16.9417836, 32.6517983,

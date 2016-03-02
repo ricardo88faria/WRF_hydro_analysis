@@ -43,7 +43,7 @@ rgb.palette.rain <- colorRampPalette(c("snow1", "lightsteelblue1", "yellowgreen"
 
 
 #open .nc
-fileNames <- Sys.glob("results/wrfout_LR*")
+fileNames <- Sys.glob("input/results/wrfout_LR*")
 nc <- nc_open(fileNames)
 names(nc$var)           
 #variav names vamos usar: 
@@ -65,7 +65,7 @@ var_names <- c("sh2o",
 
 #sist. de coordenadas, projecao e coordenadas (N-S, E-O)
 proj <- CRS('+proj=longlat +datum=WGS84')
-land <- readShapeSpatial("map/PRT_adm3.shp", proj4string = proj)
+land <- readShapeSpatial("input/map/PRT_adm3.shp", proj4string = proj)
 #land_poly <- readShapePoly("map/PRT_adm3.shp", proj4string = proj)
 #land_OGR <- readOGR("map/", "PRT_adm3")
 
@@ -251,6 +251,11 @@ end <- start + as.difftime(length(times), units="days")
 x_axis <- seq(from=start, by=interval_sec, to=end)
 x_axis <- x_axis[-1]
 
+#measured data
+source("data_analysis.R")
+#dentro do ciclo para tirar valores dos pontos get(paste0("data_", est_names_list[i]))
+
+
 #para ggplot
 for (i in 1:length(est_names_list)) {
       
@@ -263,9 +268,8 @@ for (i in 1:length(est_names_list)) {
 }
 
 #para ggplot 2 ou mais variaveis
+testo <- data.frame(Data = x_axis)
 for (j in 1:length(var_names)) {
-      
-      testo <- data.frame(Data = x_axis)
       
       for (i in 1:length(est_names_list)) {
             
@@ -274,18 +278,47 @@ for (j in 1:length(var_names)) {
             
       }
       
-      assign(paste("coor_", "f_", var_names[j], sep = ""), melt(testo, id="Data"))
+      assign(paste("coor_", "melt_", var_names[j], sep = ""), melt(testo, id="Data"))
       
 }
 
+data_stat <- data.frame(Data = as.POSIXct(get(paste0("data_", est_names_list[i]))[,1]))
+for (i in 1:length(est_names_list)) {
+      
+      #transform to comulative values  cumsum()
+      data_stat$"temp" <- cumsum(get(paste0("data_", est_names_list[i]))[,2])
+      colnames(data_stat)[length(data_stat)] <- c(paste(est_names_list[i]))
+      
+}
+
+data_stat_melt <- melt(data_stat, id="Data")
+
+
 #gráficos
 #em funcao das variaveis
-for (i in 1:length(var_names)) {
+graph_name_png <- paste("graphs/coor_", var_names[length(var_names)],"_", format(as.POSIXct(strptime(times[1], "%Y-%m-%d_%H:%M:%S")), "%Y-%m-%d"), ".png", sep = "")
+png(graph_name_png, width = 5950, height = 4500, units = "px", res = 500)
+
+graph <- ggplot(data=get(paste("coor_", "melt_", var_names[length(var_names)], sep = "")), aes(x=Data, y=value, colour=variable)) +
+      geom_line() + 
+      geom_point(data= data_stat_melt, aes(x=Data, y=value, colour=variable))
+      
+plot(graph)
+
+dev.off()
+
+widget <- ggplotly(graph)
+
+setwd("widgets")
+htmlwidgets::saveWidget(as.widget(widget), paste(var_names[length(var_names)], "_", format(as.POSIXct(strptime(times[1], "%Y-%m-%d_%H:%M:%S")), "%Y-%m-%d"),".html", sep = ""))
+setwd("../")
+
+for (i in 1:(length(var_names) - 1)) {
       
       graph_name_png <- paste("graphs/coor_", var_names[i],"_", format(as.POSIXct(strptime(times[1], "%Y-%m-%d_%H:%M:%S")), "%Y-%m-%d"), ".png", sep = "")
       png(graph_name_png, width = 5950, height = 4500, units = "px", res = 500)
       
-      graph <- ggplot(data=get(paste("coor_", "f_", var_names[i], sep = "")), aes(x=Data, y=value, colour=variable)) +
+      graph <- ggplot(data=get(paste("coor_", "melt", var_names[i], sep = "")), aes(x=Data, y=value, colour=variable)) +
             geom_line()
       plot(graph)
       
