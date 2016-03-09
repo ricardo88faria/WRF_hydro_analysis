@@ -4,7 +4,7 @@
 #library(zoo)
 #library(matrixStats)
 #library(ggplot2)
-#library(reshape2)
+library(tools)
 
 #####################################
 print("Programado por Ricardo Faria")
@@ -27,13 +27,30 @@ for (i in 1:length(est_names_list)) {
                         #quote = "\"")
       )
       
+      if (file_ext(file_data) == "xls") {
+            
+            print("exists .xls")
+            dados$Data <- as.POSIXct(paste(dados$Data, dados$Hora), format="%Y-%m-%d %H:%M:%S")
+            dados$Data <- round(dados$Data, "hours") 
+            
+      } else if (file_ext(file_data) == "txt") {
+            
+            print("exists .txt")
+            dados[,3] <- 0.2*dados[,3]
+            dados[,1] <- as.POSIXct(paste(dados[,1], dados[,2]), format="%m/%d/%y %H:%M:%S")
+            dados$Date <- round(dados$Date, "mins") 
+
+      }
+      
+      dados <- dados[,c(1, 3)]
+      colnames(dados) <- c("Data", "Value")
       
       #iguala os formatos de datas(puxa 1 hora para baixo para igual ao formato do as.POSIXct):
-      dados$Data <- as.POSIXct(paste(dados$Data, dados$Hora), format="%Y-%m-%d %H:%M:%S")
-      dados$Data <- round(dados$Data, "hours") 
+      #dados$Data <- as.POSIXct(paste(dados[1], dados[2]), format="%Y-%m-%d %H:%M:%S")
+      #dados$Data <- round(dados$Data, "hours") 
       
-      dados$Hora = NULL
-      dados$X = NULL
+      #dados$Hora = NULL
+      #dados$X = NULL
       
       
       #definicao de intervalo de tempo:
@@ -56,13 +73,19 @@ for (i in 1:length(est_names_list)) {
       int_dados <- subset(dados, Data >= data_i & Data <= data_f)
       int_dados <- data.frame(int_dados)
       
-      #int_dados$Data <- as.POSIXct(int_dados$Data)
-      #int_data$Data <- as.POSIXct(int_data$Data)
-      
-      
       #juncao sequencia de tempo hora a hora aos medidos:
-      merged <- merge(int_dados, int_data, by = "Data", sort = F, fill = NA, all = T)
-      
+      if (file_ext(file_data) == "txt") {
+            
+            hour_sum <- colSums(matrix(int_dados$Value, nrow=6))
+            int_dados <- data.frame(int_temp, hour_sum)
+            
+            merged <- data.frame(int_dados)
+            
+      } else if (file_ext(file_data) == "xls") {
+            
+            merged <- merge(int_dados, int_data, by = "Data", sort = F, fill = NA, all = T)
+            
+      }
       
       assign(paste0("data_", est_names_list[i]), merged)
       

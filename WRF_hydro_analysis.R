@@ -255,7 +255,6 @@ x_axis <- x_axis[-1]
 source("data_analysis.R")
 #dentro do ciclo para tirar valores dos pontos get(paste0("data_", est_names_list[i]))
 
-
 #para ggplot
 for (i in 1:length(est_names_list)) {
       
@@ -268,8 +267,8 @@ for (i in 1:length(est_names_list)) {
 }
 
 #para ggplot 2 ou mais variaveis
-testo <- data.frame(Data = x_axis)
 for (j in 1:length(var_names)) {
+      testo <- data.frame(Data = x_axis)
       
       for (i in 1:length(est_names_list)) {
             
@@ -282,16 +281,16 @@ for (j in 1:length(var_names)) {
       
 }
 
-data_stat <- data.frame(Data = as.POSIXct(get(paste0("data_", est_names_list[i]))[,1]))
+data_stat <- data.frame(Data = as.POSIXct(get(paste0("data_", est_names_list[1]))[,1]))
 for (i in 1:length(est_names_list)) {
       
       #transform to comulative values  cumsum()
       data_stat$"temp" <- cumsum(get(paste0("data_", est_names_list[i]))[,2])
       colnames(data_stat)[length(data_stat)] <- c(paste(est_names_list[i]))
-      
+      #data_stat <- data_stat[seq(1, length(int_dados[,2]), by = 6),]
 }
 
-data_stat_melt <- melt(data_stat, id="Data")
+data_stat_melt <- melt(data_stat, id = "Data")
 
 
 #gráficos
@@ -300,9 +299,9 @@ graph_name_png <- paste("graphs/coor_", var_names[length(var_names)],"_", format
 png(graph_name_png, width = 5950, height = 4500, units = "px", res = 500)
 
 graph <- ggplot(data=get(paste("coor_", "melt_", var_names[length(var_names)], sep = "")), aes(x=Data, y=value, colour=variable)) +
-      geom_line() + 
-      geom_point(data= data_stat_melt, aes(x=Data, y=value, colour=variable))
-      
+      geom_line() + #size = 1.0
+      geom_point(data= data_stat_melt, aes(x=Data, y=value, colour=variable), size = .7, alpha = 0.2)
+
 plot(graph)
 
 dev.off()
@@ -318,7 +317,7 @@ for (i in 1:(length(var_names) - 1)) {
       graph_name_png <- paste("graphs/coor_", var_names[i],"_", format(as.POSIXct(strptime(times[1], "%Y-%m-%d_%H:%M:%S")), "%Y-%m-%d"), ".png", sep = "")
       png(graph_name_png, width = 5950, height = 4500, units = "px", res = 500)
       
-      graph <- ggplot(data=get(paste("coor_", "melt", var_names[i], sep = "")), aes(x=Data, y=value, colour=variable)) +
+      graph <- ggplot(data=get(paste("coor_", "melt_", var_names[i], sep = "")), aes(x=Data, y=value, colour=variable)) +
             geom_line()
       plot(graph)
       
@@ -333,11 +332,34 @@ for (i in 1:(length(var_names) - 1)) {
 }
 
 #em funcao das variaveis e estacoes
+count <- 0
 for (i in 1:length(est_names_list)) {
       
       for (j in 1:length(var_names)) {
             
-            graph_name_png <- paste("graphs/coor_",est_names_list[i], "_" , var_names[j],"_", format(as.POSIXct(strptime(times[[1]], "%Y-%m-%d_%H:%M:%S")), "%Y-%m-%d"), ".png", sep = "")
+            if (j == 4) {
+                  
+                  graph_name_png <- paste("graphs/coor_",est_names_list[i], "_" , var_names[j],"_", format(as.POSIXct(strptime(times[[1]], "%Y-%m-%d_%H:%M:%S")), "%Y-%m-%d"), ".png", sep = "")
+                  png(graph_name_png, width = 5950, height = 4500, units = "px", res = 500)
+                  
+                  variav <- get(paste("ts_data_", var_names[j], "_", est_names_list[i], sep = ""))
+                  #var_names <- paste(var_names[4])
+                  graph <- ggplot(variav) +
+                        geom_line(aes(x = Data, y = var_name), color = "blue") + 
+                        geom_point(data= data_stat_melt[count:(count + length(get(paste0("data_", est_names_list[i]))[,1])),],
+                                   aes(x=Data, y=value, colour=variable), size = .7, alpha = 0.3) +
+                        labs (title = paste("Constante", var_names[j])) +
+                        scale_x_datetime(name = "Data") +   #name = "Data"
+                        scale_y_continuous(name = var_names[j])
+                  plot(graph)
+                  
+                  dev.off()
+                  
+                  count <- count + count*length(get(paste0("data_", est_names_list[1]))[,1])
+                  
+            } else {
+
+                  graph_name_png <- paste("graphs/coor_",est_names_list[i], "_" , var_names[j],"_", format(as.POSIXct(strptime(times[[1]], "%Y-%m-%d_%H:%M:%S")), "%Y-%m-%d"), ".png", sep = "")
             png(graph_name_png, width = 5950, height = 4500, units = "px", res = 500)
             
             variav <- get(paste("ts_data_", var_names[j], "_", est_names_list[i], sep = ""))
@@ -350,6 +372,8 @@ for (i in 1:length(est_names_list)) {
             plot(graph)
             
             dev.off()
+            
+            }
             
       }
       
@@ -378,9 +402,9 @@ for (i in 1:length(times)) {
             png(name_png, width = 5950, height = 4500, units = "px", res = 500)  #width = 7000 (width = 14000, height = 9000, units = "px", res = 1000)
             
             contour <- filled.contour(long, lat, get(variav_name), asp = 1, color = rgb.palette.rain, levels = seq(0, max_axis, levl), # nlevels = 400, #axes = F #(12), nlev=13,
-                           plot.title = title(main = as.expression(paste("Média diária acomulada da variável", var_names[j], as.Date(times[i]))), xlab = 'Longitude [°]', ylab = 'Latitude [°]'),
-                           plot.axes = {axis(1); axis(2); plot(land, bg = "transparent", border="grey30", lwd=0.5, add = T); grid()},
-                           key.title = title(main =  as.expression(paste(units_name[j]))))
+                                      plot.title = title(main = as.expression(paste("Média diária acomulada da variável", var_names[j], as.Date(times[i]))), xlab = 'Longitude [°]', ylab = 'Latitude [°]'),
+                                      plot.axes = {axis(1); axis(2); plot(land, bg = "transparent", border="grey30", lwd=0.5, add = T); grid()},
+                                      key.title = title(main =  as.expression(paste(units_name[j]))))
             
             #plot(getMap(resolution = "high"), add = T)
             #contour(long, lat, hgt, add=TRUE, lwd=1, labcex=1, levels=0.99, drawlabels=FALSE, col="grey30")
@@ -389,7 +413,7 @@ for (i in 1:length(times)) {
             
             #raster
             rast <- raster(matrix_rotate(matrix_rotate(matrix_rotate(get(variav_name)))), 
-                            xmn = long_min, xmx = long_max, ymn = lat_min, ymx = lat_max, CRS("+proj=longlat +datum=WGS84"))
+                           xmn = long_min, xmx = long_max, ymn = lat_min, ymx = lat_max, CRS("+proj=longlat +datum=WGS84"))
             #proj4string(test) <- CRS("+proj=longlat +datum=WGS84") #proj
             
             #plot_ly(z = t(get(variav_name)), lon = long, lat = lat, type = "contour")
@@ -408,7 +432,7 @@ for (i in 1:length(times)) {
             #ggplot() +
             #      geom_raster(data = rast, aes(lon , lat, fill = valor)) + 
             #      stat_contour(data = hgt_df, aes(lon, lat, z = hgt))
-
+            
             ##kmz
             setwd("kmz")
             system(paste("mkdir", paste(as.Date(times[i]), sep = "")))
