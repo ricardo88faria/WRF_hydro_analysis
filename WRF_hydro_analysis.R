@@ -299,7 +299,7 @@ graph_name_png <- paste("graphs/coor_", var_names[length(var_names)],"_", format
 png(graph_name_png, width = 5950, height = 4500, units = "px", res = 500)
 
 graph <- ggplot(data=get(paste("coor_", "melt_", var_names[length(var_names)], sep = "")), aes(x=Data, y=value, colour=variable)) +
-      geom_line() + #size = 1.0
+      geom_line() + #size = 1.0 falta titulo!!!!!!!!!!
       geom_point(data= data_stat_melt, aes(x=Data, y=value, colour=variable), size = .7, alpha = 0.2)
 
 plot(graph)
