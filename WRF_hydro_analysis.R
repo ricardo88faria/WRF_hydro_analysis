@@ -35,7 +35,7 @@ source("config.txt")
 t <- Sys.time()
 
 #create folders
-system("mkdir kmz Images widgets graphs")
+system("mkdir -p output/kmz output/Images output/widgets output/graphs")
 
 #cores dos graficos
 rgb.palette.rad <- colorRampPalette(c("lightcyan", "yellow2", "orange", "tomato1", "violetred4", "violetred", "purple"), space = "rgb")
@@ -110,6 +110,7 @@ hour_list <- c(seq(from = 1, to = 145, by = 6))
 seq_i <- c(seq(from = 1, to = 145-6, by = 6))
 seq_f <- c(seq(from = 6, to = 145, by = 6))
 interv_min <- 24/length(nc$dim$Time$vals)*60
+
 times <- c()
 
 max_sh2o_graph <- c()
@@ -138,7 +139,13 @@ for (i in 1:length(est_names_list)) {
 for (i in 1:length(fileNames)){ 
       temp_nc <- nc$filename[i]
       temp_nc <- nc_open(temp_nc)
-      variav_sh2o_nc <- ncvar_get(temp_nc, "SH2O", count = c(-1, -1, 1, -1)) # count primeiro nivel de profundidade do solo ~0,3m
+      
+      # count = c(long, lat, terrain layer, time) (-1 = todos os valores) count todos os niveis de profundidade do solo,
+      # seguindo o esquema Noah land surface model (NLSM) 4 niveis de profundidade de 0.1, 0.3, 0.6 e 1 metros
+      variav_sh2o_nc <- ncvar_get(temp_nc, "SH2O", start = c(1, 1, 1, 1), count = c(-1, -1, 1, -1)) + 
+            ncvar_get(temp_nc, "SH2O", start = c(1, 1, 2, 1), count = c(-1, -1, 1, -1)) + 
+            ncvar_get(temp_nc, "SH2O", start = c(1, 1, 3, 1), count = c(-1, -1, 1, -1)) + 
+            ncvar_get(temp_nc, "SH2O", start = c(1, 1, 4, 1), count = c(-1, -1, 1, -1))
       variav_sfroff_nc <- ncvar_get(temp_nc, "SFROFF")
       variav_udroff_nc <- ncvar_get(temp_nc, "UDROFF")
       variav_rainnc_nc <- ncvar_get(temp_nc, "RAINNC")
@@ -255,7 +262,7 @@ x_axis <- x_axis[-1]
 source("data_analysis.R")
 #dentro do ciclo para tirar valores dos pontos get(paste0("data_", est_names_list[i]))
 
-#para ggplot
+#para ggplot das matrizes
 for (i in 1:length(est_names_list)) {
       
       for (j in 1:length(var_names)) {
@@ -281,6 +288,8 @@ for (j in 1:length(var_names)) {
       
 }
 
+
+# passar dados para ggplot
 data_stat <- data.frame(Data = as.POSIXct(get(paste0("data_", est_names_list[1]))[,1]))
 for (i in 1:length(est_names_list)) {
       
@@ -290,12 +299,22 @@ for (i in 1:length(est_names_list)) {
       #data_stat <- data_stat[seq(1, length(int_dados[,2]), by = 6),]
 }
 
-data_stat_melt <- melt(data_stat, id = "Data")
+# acrescentar valores iniciais ao grafico ou nao 
+if (graph_eq == 1) {
+      
+      for (i in est_names_list) {
+            
+            data_stat[,c(paste0(i))] = data_stat[,c(paste0(i))] + get(paste0("coor_rainnc_f_", i))[1]
+            
+      }
+      #data_stat[,c(paste0(est_names_list[i]))] = data_stat[,c(paste0(est_names_list[i]))] + get(paste0("coor_rainnc_f_", est_names_list[i]))[1]
+}
 
+data_stat_melt <- melt(data_stat, id = "Data")
 
 #gráficos
 #em funcao das variaveis
-graph_name_png <- paste("graphs/coor_", var_names[length(var_names)],"_", format(as.POSIXct(strptime(times[1], "%Y-%m-%d_%H:%M:%S")), "%Y-%m-%d"), ".png", sep = "")
+graph_name_png <- paste("output/graphs/coor_", var_names[length(var_names)],"_", format(as.POSIXct(strptime(times[1], "%Y-%m-%d_%H:%M:%S")), "%Y-%m-%d"), ".png", sep = "")
 png(graph_name_png, width = 5950, height = 4500, units = "px", res = 500)
 
 graph <- ggplot(data=get(paste("coor_", "melt_", var_names[length(var_names)], sep = "")), aes(x=Data, y=value, colour=variable)) +
@@ -308,13 +327,13 @@ dev.off()
 
 widget <- ggplotly(graph)
 
-setwd("widgets")
+setwd("output/widgets")
 htmlwidgets::saveWidget(as.widget(widget), paste(var_names[length(var_names)], "_", format(as.POSIXct(strptime(times[1], "%Y-%m-%d_%H:%M:%S")), "%Y-%m-%d"),".html", sep = ""))
-setwd("../")
+setwd("../../")
 
 for (i in 1:(length(var_names) - 1)) {
       
-      graph_name_png <- paste("graphs/coor_", var_names[i],"_", format(as.POSIXct(strptime(times[1], "%Y-%m-%d_%H:%M:%S")), "%Y-%m-%d"), ".png", sep = "")
+      graph_name_png <- paste("output/graphs/coor_", var_names[i],"_", format(as.POSIXct(strptime(times[1], "%Y-%m-%d_%H:%M:%S")), "%Y-%m-%d"), ".png", sep = "")
       png(graph_name_png, width = 5950, height = 4500, units = "px", res = 500)
       
       graph <- ggplot(data=get(paste("coor_", "melt_", var_names[i], sep = "")), aes(x=Data, y=value, colour=variable)) +
@@ -325,9 +344,9 @@ for (i in 1:(length(var_names) - 1)) {
       
       widget <- ggplotly(graph)
       
-      setwd("widgets")
+      setwd("output/widgets")
       htmlwidgets::saveWidget(as.widget(widget), paste(var_names[i], "_", format(as.POSIXct(strptime(times[1], "%Y-%m-%d_%H:%M:%S")), "%Y-%m-%d"),".html", sep = ""))
-      setwd("../")
+      setwd("../../")
       
 }
 
@@ -339,7 +358,7 @@ for (i in 1:length(est_names_list)) {
             
             if (j == 4) {
                   
-                  graph_name_png <- paste("graphs/coor_",est_names_list[i], "_" , var_names[j],"_", format(as.POSIXct(strptime(times[[1]], "%Y-%m-%d_%H:%M:%S")), "%Y-%m-%d"), ".png", sep = "")
+                  graph_name_png <- paste("output/graphs/coor_",est_names_list[i], "_" , var_names[j],"_", format(as.POSIXct(strptime(times[[1]], "%Y-%m-%d_%H:%M:%S")), "%Y-%m-%d"), ".png", sep = "")
                   png(graph_name_png, width = 5950, height = 4500, units = "px", res = 500)
                   
                   variav <- get(paste("ts_data_", var_names[j], "_", est_names_list[i], sep = ""))
@@ -355,24 +374,24 @@ for (i in 1:length(est_names_list)) {
                   
                   dev.off()
                   
-                  count <- count + count*length(get(paste0("data_", est_names_list[1]))[,1])
+                  count <- count + length(get(paste0("data_", est_names_list[i]))[,1])
                   
             } else {
-
-                  graph_name_png <- paste("graphs/coor_",est_names_list[i], "_" , var_names[j],"_", format(as.POSIXct(strptime(times[[1]], "%Y-%m-%d_%H:%M:%S")), "%Y-%m-%d"), ".png", sep = "")
-            png(graph_name_png, width = 5950, height = 4500, units = "px", res = 500)
-            
-            variav <- get(paste("ts_data_", var_names[j], "_", est_names_list[i], sep = ""))
-            #var_names <- paste(var_names[i])
-            graph <- ggplot(variav) +
-                  geom_line(aes(x = Data, y = var_name), color = "blue") +
-                  labs (title = paste("Constante", var_names[j])) +
-                  scale_x_datetime(name = "Data") +   #name = "Data"
-                  scale_y_continuous(name = var_names[j])
-            plot(graph)
-            
-            dev.off()
-            
+                  
+                  graph_name_png <- paste("output/graphs/coor_",est_names_list[i], "_" , var_names[j],"_", format(as.POSIXct(strptime(times[[1]], "%Y-%m-%d_%H:%M:%S")), "%Y-%m-%d"), ".png", sep = "")
+                  png(graph_name_png, width = 5950, height = 4500, units = "px", res = 500)
+                  
+                  variav <- get(paste("ts_data_", var_names[j], "_", est_names_list[i], sep = ""))
+                  #var_names <- paste(var_names[i])
+                  graph <- ggplot(variav) +
+                        geom_line(aes(x = Data, y = var_name), color = "blue") +
+                        labs (title = paste("Constante", var_names[j])) +
+                        scale_x_datetime(name = "Data") +   #name = "Data"
+                        scale_y_continuous(name = var_names[j])
+                  plot(graph)
+                  
+                  dev.off()
+                  
             }
             
       }
@@ -398,7 +417,7 @@ for (i in 1:length(times)) {
             max_axis <- max(get(paste("max_", var_names[j], "_graph", sep = "")))
             levl <- max_axis/20
             
-            name_png = paste("Images/", variav_name, ".png", sep = "")
+            name_png = paste("output/Images/", variav_name, ".png", sep = "")
             png(name_png, width = 5950, height = 4500, units = "px", res = 500)  #width = 7000 (width = 14000, height = 9000, units = "px", res = 1000)
             
             contour <- filled.contour(long, lat, get(variav_name), asp = 1, color = rgb.palette.rain, levels = seq(0, max_axis, levl), # nlevels = 400, #axes = F #(12), nlev=13,
@@ -434,7 +453,7 @@ for (i in 1:length(times)) {
             #      stat_contour(data = hgt_df, aes(lon, lat, z = hgt))
             
             ##kmz
-            setwd("kmz")
+            setwd("output/kmz")
             system(paste("mkdir", paste(as.Date(times[i]), sep = "")))
             setwd(paste(as.Date(times[i]), sep = ""))
             system(paste("mkdir", paste(var_names[j], sep = "")))
@@ -443,12 +462,12 @@ for (i in 1:length(times)) {
             #KML(rast, file = paste("Rad_", as.Date(times[[i]]), ".kmz", sep = ""), colour = rgb.palette.rad)
             plotKML(obj=rast, folder.name=paste(var_names[j]), file.name=paste(var_names[j], as.Date(times[[i]]), ".kmz", sep = ""), colour_scale = rgb.palette.rad(400), open.kml = FALSE)
             
-            setwd("../../../")
+            setwd("../../../../")
       } 
 }
 
 #GIFs
-#gif_name <- paste("GIFs/", "Rad_", as.Date(times[[i]]), ".gif", sep="")
+#gif_name <- paste("output/GIFs/", "Rad_", as.Date(times[[i]]), ".gif", sep="")
 
 #system(paste("convert -verbose -resize 30% -delay 80 -loop 0", paste("Images/", "*", sep=""), gif_name))
 

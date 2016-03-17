@@ -55,11 +55,13 @@ for (i in 1:length(est_names_list)) {
       
       #definicao de intervalo de tempo:
       data_i <- times[1]
-      data_f <- times[length(times)]
+      data_f <- times[length(times)] 
       #int_temp = format(seq(as.POSIXlt(data_i), as.POSIXlt(data_f), by = "hour"), "%Y-%m-%d %H:%M:%S")
       #hora solar:
       int_temp = format(seq(ISOdate(format(as.POSIXlt(data_i), "%Y"),format(as.POSIXlt(data_i), "%m"),format(as.POSIXlt(data_i), "%d"),format(as.POSIXlt(data_i), "%H"),format(as.POSIXlt(data_i), "%M"),format(as.POSIXlt(data_i), "%S")),
-                            ISOdate(format(as.POSIXlt(data_f), "%Y"),format(as.POSIXlt(data_f), "%m"),format(as.POSIXlt(data_f), "%d"),format(as.POSIXlt(data_f), "%H"),format(as.POSIXlt(data_f), "%M"),format(as.POSIXlt(data_f), "%S")), "hour"), "%Y-%m-%d %H:%M:%S")
+                            ISOdate(format(as.POSIXlt(data_f), "%Y"),format(as.POSIXlt(data_f), "%m"),format(as.POSIXlt(data_f)+ 1*60*60*24, "%d"),format(as.POSIXlt(data_f), "%H"),format(as.POSIXlt(data_f), "%M"),format(as.POSIXlt(data_f), "%S")), "hour"), "%Y-%m-%d %H:%M:%S")
+      data_i <- int_temp[1]
+      data_f <- tail(int_temp, 1)
       #x = summary(int_temp)
       #int_temp = int_temp[2:x[1]]
       

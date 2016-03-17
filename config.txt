@@ -2,7 +2,10 @@
 #Configure file with all necessary variables and configurations for script run well#
 ####################################################################################
 
-#names(est_vec) = c("FNCH_long", "FNCH_lat", "SEAG_long", "SEAG_lat")
+
+#make inicial values correction equal to simulated to make comparation easier 1 or 0 to ignore
+#Acomulated rain values will start in zero
+graph_eq = 1
 
 est_names_list = c(#"achg",                #stations name
                     #"Atsv",
